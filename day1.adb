@@ -23,7 +23,8 @@ procedure Day1 is
    Input_Mass : Natural;
    Fuel       : Natural;
 
-   Accumulator : Natural := 0;
+   Accumulator_1 : Natural := 0;
+   Accumulator_2 : Natural := 0;
 
 begin
 
@@ -35,10 +36,12 @@ begin
          Input_Mass := Natural'Value(Line);
          Fuel := Mass_To_Fuel(Input_Mass);
 
+         Accumulator_1 := Accumulator_1 + Fuel;
+
          -- Next, deal with the fuel the fuel needs (and etc.)
          Fuel_Calculation(Fuel);
 
-         Accumulator := Accumulator + Fuel;
+         Accumulator_2 := Accumulator_2 + Fuel;
 
          exit when Ada.Text_IO.End_Of_File;
 
@@ -46,6 +49,7 @@ begin
 
    end loop;
    
-   Ada.Text_IO.Put_Line("Total: " & Accumulator'Image);
+   Ada.Text_IO.Put_Line("Total Part 1: " & Accumulator_1'Image);
+   Ada.Text_IO.Put_Line("Total Part 2: " & Accumulator_2'Image);
 
 end Day1;
