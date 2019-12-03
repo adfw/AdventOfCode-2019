@@ -1,7 +1,9 @@
 with Ada.Text_IO;
 with GNAT.String_Split;
 
-procedure Day2 is
+procedure Day2 
+   with SPARK_Mode => On
+is
    
    type Opcode is
     (Add,

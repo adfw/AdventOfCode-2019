@@ -1,6 +1,8 @@
 with Ada.Text_IO;
 
-procedure Day1 is
+procedure Day1
+   with SPARK_Mode => On
+is
 
    function Mass_To_Fuel (Mass : Natural) return Natural is
       ((Mass / 3) -2);
@@ -30,7 +32,7 @@ begin
 
    loop
       declare
-         Line : String := Ada.Text_IO.Get_Line;
+         Line : constant String := Ada.Text_IO.Get_Line;
       begin
 
          Input_Mass := Natural'Value(Line);
