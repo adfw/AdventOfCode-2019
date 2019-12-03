@@ -11,6 +11,8 @@ procedure Day2 is
      Halt,
      Error);
 
+   subtype Operation is Opcode range Add .. Multiply;
+
    function Int_To_Opcode (Int : Integer) return Opcode is
      (case Int is
         when 1 => Add,
@@ -26,10 +28,30 @@ procedure Day2 is
          (Natural range 0 .. Natural
             (GNAT.String_Split.Slice_Count (Split)) - 1) of Integer;
 
+      procedure Perform_Op
+         (Operand : in     Operation;
+          Left    : in     Natural;
+          Right   : in     Natural;
+          Store   :    out Natural;
+          Result  :    out Natural)
+      is
+      begin
+         case Operand is 
+            when Add =>
+               Result := Left + Right;
+            when Multiply => 
+               Result := Left * Right;
+         end case;
+         Store := Result;
+      end Perform_Op;
+
       Program : Program_T;
 
-      Program_Counter : Natural := 0;
       Current_Opcode : Opcode;
+
+      Program_Counter : Natural := 0;
+
+      Result : Natural;
    begin
       for I in Program'Range loop
          -- Slice_Number 0 is the input string (i.e. everything), so skip it.
@@ -40,10 +62,33 @@ procedure Day2 is
 
       -- So we now have Program, which contains our... program?
       -- Let's try to run it.
-      Current_Opcode := Int_To_Opcode (Program(Program_Counter));
-      Ada.Text_IO.Put_Line(Current_Opcode'Image);
-      
 
+      -- Patch it
+      Program (1) := 12;
+      Program (2) := 2;
+
+      while Program_Counter <= Program'Last loop
+         Current_Opcode := Int_To_Opcode (Program(Program_Counter));
+         case Current_Opcode is
+            when Operation => 
+            -- Do something
+            Perform_Op
+              (Operand => Current_Opcode,
+               Left    => Program(Program(Program_Counter + 1)),
+               Right   => Program(Program(Program_Counter + 2)),
+               Store   => Program(Program(Program_Counter + 3)),
+               Result  => Result);
+            when Halt => 
+               Ada.Text_IO.Put_Line("Halted.");
+               Ada.Text_IO.Put_Line("Result : " & Result'Image);
+               exit;
+            when Error => 
+               Ada.Text_IO.Put_Line("Oops.");
+         end case;
+         Program_Counter := Program_Counter + 4;
+      end loop;
+
+      
    end Split_To_Array;
 
    Input_Split : GNAT.String_Split.Slice_Set;
@@ -58,7 +103,6 @@ begin
                                   Separators => ",",
                                   S          => Input_Split);
          
-         Ada.Text_IO.Put_Line(GNAT.String_Split.Slice_Count(Input_Split)'Image);
          Split_To_Array(Input_Split);
 
          exit when Ada.Text_IO.End_Of_File;
