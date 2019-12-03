@@ -1,6 +1,4 @@
 with Ada.Text_IO;
-with Ada.Strings.Fixed;
-with GNAT.Array_Split;
 with GNAT.String_Split;
 
 procedure Day2 is
@@ -28,30 +26,71 @@ procedure Day2 is
          (Natural range 0 .. Natural
             (GNAT.String_Split.Slice_Count (Split)) - 1) of Integer;
 
-      procedure Perform_Op
-         (Operand : in     Operation;
-          Left    : in     Natural;
-          Right   : in     Natural;
-          Store   :    out Natural;
-          Result  :    out Natural)
+      procedure Run_Program
+         (Prog   : in     Program_T;
+          Result :    out Natural)
       is
+
+         --------------------------------------------------------------
+         --  Perform_Op:                                             --
+         --     Performs an operation Store := Left OP Right.        -- 
+         --     For convenience, also returns a result.              --
+         --     Given the day 2 hint, increment the Program Counter. --
+         --------------------------------------------------------------
+         procedure Perform_Op
+            (Operand : in     Operation;
+             Left    : in     Natural;
+             Right   : in     Natural;
+             PC      : in out Natural;
+             Store   :    out Natural;
+             Result  :    out Natural)
+         is
+         begin
+            case Operand is 
+               when Add =>
+                  Result := Left + Right;
+                  PC := PC + 4;
+               when Multiply => 
+                  Result := Left * Right;
+                  PC := PC + 4;
+            end case;
+            Store := Result;
+         end Perform_Op;
+
+         Current_Opcode : Opcode;
+
+         Program_Counter : Natural := 0;
+
+         Program : Program_T := Prog;
+
       begin
-         case Operand is 
-            when Add =>
-               Result := Left + Right;
-            when Multiply => 
-               Result := Left * Right;
-         end case;
-         Store := Result;
-      end Perform_Op;
+         while Program_Counter <= Program'Last loop
+            Current_Opcode := Int_To_Opcode (Program(Program_Counter));
+            case Current_Opcode is
+               when Operation => 
+               -- Do something
+               Perform_Op
+                 (Operand => Current_Opcode,
+                  Left    => Program(Program(Program_Counter + 1)),
+                  Right   => Program(Program(Program_Counter + 2)),
+                  PC      => Program_Counter,
+                  Store   => Program(Program(Program_Counter + 3)),
+                  Result  => Result);
+               when Halt => 
+                  exit;
+               when Error => 
+                  Ada.Text_IO.Put_Line("Oops.");
+            end case;
+         end loop;
+
+      end Run_Program;
 
       Program : Program_T;
 
-      Current_Opcode : Opcode;
-
-      Program_Counter : Natural := 0;
-
       Result : Natural;
+
+      Desired_Result : constant Natural := 19690720;
+
    begin
       for I in Program'Range loop
          -- Slice_Number 0 is the input string (i.e. everything), so skip it.
@@ -63,32 +102,30 @@ procedure Day2 is
       -- So we now have Program, which contains our... program?
       -- Let's try to run it.
 
+      -- Part 1:
       -- Patch it
       Program (1) := 12;
       Program (2) := 2;
+      Run_Program (Program, Result);
+      Ada.Text_IO.Put_Line("Part 1:" & Result'Image);
 
-      while Program_Counter <= Program'Last loop
-         Current_Opcode := Int_To_Opcode (Program(Program_Counter));
-         case Current_Opcode is
-            when Operation => 
-            -- Do something
-            Perform_Op
-              (Operand => Current_Opcode,
-               Left    => Program(Program(Program_Counter + 1)),
-               Right   => Program(Program(Program_Counter + 2)),
-               Store   => Program(Program(Program_Counter + 3)),
-               Result  => Result);
-            when Halt => 
-               Ada.Text_IO.Put_Line("Halted.");
-               Ada.Text_IO.Put_Line("Result : " & Result'Image);
-               exit;
-            when Error => 
-               Ada.Text_IO.Put_Line("Oops.");
-         end case;
-         Program_Counter := Program_Counter + 4;
-      end loop;
+      -- Part 2: Find Nounphrase/Verbphrase
+      Main_Loop :
+         for Noun in Natural range 0 .. 99 loop
+            for Verb in Natural range 0 .. 99 loop
+               Program (1) := Noun;
+               Program (2) := Verb;
 
-      
+               Run_Program (Program, Result);
+
+               if Result = Desired_Result then
+                  Ada.Text_IO.Put_Line("Part 2:" & Noun'Image & Verb'Image);
+                  exit Main_Loop;
+               end if;
+
+            end loop;
+      end loop Main_Loop;
+
    end Split_To_Array;
 
    Input_Split : GNAT.String_Split.Slice_Set;
@@ -97,7 +134,7 @@ begin
 
    loop
       declare
-         Line : String := Ada.Text_IO.Get_Line;
+         Line : constant String := Ada.Text_IO.Get_Line;
       begin
          GNAT.String_Split.Create(From       => Line,
                                   Separators => ",",
