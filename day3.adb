@@ -4,38 +4,111 @@ with GNAT.String_Split;
 
 with Coord;
 
-use type Ada.Containers.Count_Type;
-
 procedure Day3
    with SPARK_Mode => On
 is
 
-   type Direction_T is (Up, Down, Left, Right, Error);
-
-   subtype Valid_Direction is Direction_T range Up .. Right;
-
-   function Char_To_Direction (Input : Character) return Direction_T is
-      (case Input is
-         when 'U' => Up,
-         when 'D' => Down,
-         when 'L' => Left,
-         when 'R' => Right,
-         when others => Error);
 
    procedure String_To_Vector
       (Input_Split_1 : GNAT.String_Split.Slice_Set;
        Input_Split_2 : GNAT.String_Split.Slice_Set)
    is
-      Wire_1 : Coord.Coord_Points.Vector (Ada.Containers.Count_Type
-            (GNAT.String_Split.Slice_Count (Input_Split_1)) - 1);
-      Wire_2 : Coord.Coord_Points.Vector (Ada.Containers.Count_Type
-            (GNAT.String_Split.Slice_Count (Input_Split_2)) - 1);
+      type Wire_1_Vecs_T is array 
+         (Natural range 0 .. Natural
+           (GNAT.String_Split.Slice_Count (Input_Split_1)) - 1) of Coord.Vector;
+
+      type Wire_2_Vecs_T is array 
+         (Natural range 0 .. Natural
+           (GNAT.String_Split.Slice_Count (Input_Split_2)) - 1) of Coord.Vector;
+
+      Wire_1_Vecs : Wire_1_Vecs_T;
+      Wire_1_Len  : Natural := 0;
+      Wire_2_Vecs : Wire_2_Vecs_T;
+      Wire_2_Len  : Natural := 0;
+
+      procedure Manhattan_Wires
+        (Wire_1_Vecs : Wire_1_Vecs_T;
+         Wire_1_Len  : Natural;
+         Wire_2_Vecs : Wire_2_Vecs_T;
+         Wire_2_Len  : Natural)
+      is
+         Wire_1 : Coord.Coord_Points.Vector (Ada.Containers.Count_Type(Wire_1_Len));
+         Wire_2 : Coord.Coord_Points.Vector (Ada.Containers.Count_Type(Wire_2_Len));
+
+         Pos : Coord.Coord;
+      begin
+         
+         Pos := Coord.Start_Coord;
+         Coord.Coord_Points.Append(Wire_1, Pos);
+         for Vec of Wire_1_Vecs loop
+            Coord.Expand_Vec (Vec, Wire_1, Pos);
+         end loop;
+         Ada.Text_IO.Put_Line("Wire 1 Created" & Coord.Coord_Points.Length(Wire_1)'Image);
+
+         Pos := Coord.Start_Coord;
+         Coord.Coord_Points.Append(Wire_2, Pos);
+         Ada.Text_IO.Put_Line("Wire 2 Append" & Coord.Coord_Points.Length(Wire_1)'Image);
+         for Vec of Wire_2_Vecs loop
+            Coord.Expand_Vec (Vec, Wire_2, Pos);
+         end loop;
+
+         Ada.Text_IO.Put_Line("Wire 1 Created" & Coord.Coord_Points.Length(Wire_1)'Image);
+         Ada.Text_IO.Put_Line("Wire 2 Created" & Coord.Coord_Points.Length(Wire_2)'Image);
+
+         for J in Coord.Coord_Points.First_Index (Wire_1) .. 
+            Coord.Coord_Points.Last_Index (Wire_1) loop
+            Ada.Text_IO.Put_Line("W1" & J'Image & Coord.Coord_Points.Element(Wire_1, J).Y'Image);
+         end loop;
+
+         for J in Coord.Coord_Points.First_Index (Wire_2) .. 
+            Coord.Coord_Points.Last_Index (Wire_2) loop
+            Ada.Text_IO.Put_Line("W2" & J'Image & Coord.Coord_Points.Element(Wire_2, J).Y'Image);
+         end loop;
+
+         Ada.Text_IO.Put_Line("Fin:" & Coord.Coord_Points.Length(Wire_1)'Image);
+
+      end Manhattan_Wires;
+
+
    begin
       -- TODO: Go through each item in the slice, and extrapolate all the
       --       'points' on the vector. Then, we can do Vector comparisons,
       --       but I can't be bothered doing anything fancy like min/max
       --       checking.
-      null;
+
+      -- This is bloody messy. Could be made into a generic.
+      for I in Wire_1_Vecs'Range loop
+         declare
+            String_Vector : constant String := (GNAT.String_Split.Slice 
+                 (Input_Split_1, GNAT.String_Split.Slice_Number(I + 1)));
+         begin
+            Wire_1_Vecs (I) := Coord.Vector'
+              (Direction => Coord.Direction_T'Value
+                 (String_Vector (String_Vector'First .. String_Vector'First)),
+               Size      => Natural'Value
+                 (String_Vector (String_Vector'First + 1 .. String_Vector'Last)));
+            Wire_1_Len := Wire_1_Len + Wire_1_Vecs (I).Size;
+         end;
+      end loop;
+
+      for I in Wire_2_Vecs'Range loop
+         declare
+            String_Vector : constant String := (GNAT.String_Split.Slice 
+                 (Input_Split_2, GNAT.String_Split.Slice_Number(I + 1)));
+         begin
+            Wire_2_Vecs (I) := Coord.Vector'
+              (Direction => Coord.Direction_T'Value
+                 (String_Vector (String_Vector'First .. String_Vector'First)),
+               Size      => Natural'Value
+                 (String_Vector (String_Vector'First + 1 .. String_Vector'Last)));
+            Wire_2_Len := Wire_2_Len + Wire_2_Vecs (I).Size;
+         end;
+      end loop;
+      Ada.Text_IO.Put_Line(Wire_1_Vecs(0).Direction'Image & Wire_1_Vecs(0).Size'Image);
+      Ada.Text_IO.Put_Line(Wire_2_Vecs(0).Direction'Image & Wire_2_Vecs(0).Size'Image);
+
+      Manhattan_Wires(Wire_1_Vecs, Wire_1_Len, Wire_2_Vecs, Wire_2_Len);
+
    end String_To_Vector;
 
    Input_Split_1 : GNAT.String_Split.Slice_Set;
