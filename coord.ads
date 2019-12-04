@@ -1,7 +1,6 @@
-with Ada.Containers.Formal_Vectors;
+with Ada.Containers.Vectors;
 
 package Coord
-   with SPARK_Mode => On
 is
    type Coord is record
       X         : Integer;
@@ -27,7 +26,7 @@ is
       Size      : Natural;
    end record;
    
-   package Coord_Points is new Ada.Containers.Formal_Vectors
+   package Coord_Points is new Ada.Containers.Vectors
      (Element_Type => Coord,
       Index_Type   => Natural);
 

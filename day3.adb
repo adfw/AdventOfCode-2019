@@ -32,10 +32,12 @@ is
          Wire_2_Vecs : Wire_2_Vecs_T;
          Wire_2_Len  : Natural)
       is
-         Wire_1 : Coord.Coord_Points.Vector (Ada.Containers.Count_Type(Wire_1_Len));
-         Wire_2 : Coord.Coord_Points.Vector (Ada.Containers.Count_Type(Wire_2_Len));
+         Wire_1 : Coord.Coord_Points.Vector ;--(Ada.Containers.Count_Type(Wire_1_Len));
+         Wire_2 : Coord.Coord_Points.Vector ;--(Ada.Containers.Count_Type(Wire_2_Len));
 
          Pos : Coord.Coord;
+         Distance : Natural;
+         Smallest_Distance : Natural := Natural'Last;
       begin
          
          Pos := Coord.Start_Coord;
@@ -57,15 +59,24 @@ is
 
          for J in Coord.Coord_Points.First_Index (Wire_1) .. 
             Coord.Coord_Points.Last_Index (Wire_1) loop
-            Ada.Text_IO.Put_Line("W1" & J'Image & Coord.Coord_Points.Element(Wire_1, J).Y'Image);
+            --Ada.Text_IO.Put_Line("W1" & J'Image & Coord.Coord_Points.Element(Wire_1, J).Y'Image);
+            if Coord.Coord_Points.Contains(Wire_2, Coord.Coord_Points.Element(Wire_1, J))
+            then
+                Distance := abs(Coord.Coord_Points.Element(Wire_1, J).X) + abs(Coord.Coord_Points.Element(Wire_1, J).Y);
+                Ada.Text_IO.Put_Line("FOUND" & Distance'Image);
+                if Distance > 0 and then Distance < Smallest_Distance then
+                   Smallest_Distance := Distance;
+                end if;
+            end if;
          end loop;
 
          for J in Coord.Coord_Points.First_Index (Wire_2) .. 
             Coord.Coord_Points.Last_Index (Wire_2) loop
-            Ada.Text_IO.Put_Line("W2" & J'Image & Coord.Coord_Points.Element(Wire_2, J).Y'Image);
+            null;--  Ada.Text_IO.Put_Line("W2" & J'Image & Coord.Coord_Points.Element(Wire_2, J).Y'Image);
          end loop;
 
          Ada.Text_IO.Put_Line("Fin:" & Coord.Coord_Points.Length(Wire_1)'Image);
+         Ada.Text_IO.Put_Line("Smallest Distance:" & Smallest_Distance'Image);
 
       end Manhattan_Wires;
 
