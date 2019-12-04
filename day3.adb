@@ -37,7 +37,11 @@ is
 
          Pos : Coord.Coord;
          Distance : Natural;
+         Steps    : Natural;
          Smallest_Distance : Natural := Natural'Last;
+         Smallest_Steps : Natural := Natural'Last;
+
+         Elem : Coord.Coord;
       begin
          
          Pos := Coord.Start_Coord;
@@ -60,32 +64,37 @@ is
          for J in Coord.Coord_Points.First_Index (Wire_1) .. 
             Coord.Coord_Points.Last_Index (Wire_1) loop
             --Ada.Text_IO.Put_Line("W1" & J'Image & Coord.Coord_Points.Element(Wire_1, J).Y'Image);
-            if Coord.Coord_Points.Contains(Wire_2, Coord.Coord_Points.Element(Wire_1, J))
+            Elem := Coord.Coord_Points.Element(Wire_1, J); 
+            if Coord.Coord_Points.Contains(Wire_2, Elem)
             then
-                Distance := abs(Coord.Coord_Points.Element(Wire_1, J).X) + abs(Coord.Coord_Points.Element(Wire_1, J).Y);
+                Distance := abs(Elem.X) + abs(Elem.Y);
                 Ada.Text_IO.Put_Line("FOUND" & Distance'Image);
                 if Distance > 0 and then Distance < Smallest_Distance then
                    Smallest_Distance := Distance;
                 end if;
+                Steps := J + Natural 
+                   (Coord.Coord_Points.Find_Index (Wire_2, Elem));
+                Ada.Text_IO.Put_Line("STEPS" & Steps'Image);
+                if Steps > 0 and then Steps < Smallest_Steps then
+                   Smallest_Steps := Steps;
+                end if;
             end if;
          end loop;
 
-         for J in Coord.Coord_Points.First_Index (Wire_2) .. 
-            Coord.Coord_Points.Last_Index (Wire_2) loop
-            null;--  Ada.Text_IO.Put_Line("W2" & J'Image & Coord.Coord_Points.Element(Wire_2, J).Y'Image);
-         end loop;
+        -- for J in Coord.Coord_Points.First_Index (Wire_2) .. 
+        --    Coord.Coord_Points.Last_Index (Wire_2) loop
+        --    null;
+        --    --  Ada.Text_IO.Put_Line("W2" & J'Image & Coord.Coord_Points.Element(Wire_2, J).Y'Image);
+        -- end loop;
 
          Ada.Text_IO.Put_Line("Fin:" & Coord.Coord_Points.Length(Wire_1)'Image);
          Ada.Text_IO.Put_Line("Smallest Distance:" & Smallest_Distance'Image);
+         Ada.Text_IO.Put_Line("Smallest Steps:" & Smallest_Steps'Image);
 
       end Manhattan_Wires;
 
 
    begin
-      -- TODO: Go through each item in the slice, and extrapolate all the
-      --       'points' on the vector. Then, we can do Vector comparisons,
-      --       but I can't be bothered doing anything fancy like min/max
-      --       checking.
 
       -- This is bloody messy. Could be made into a generic.
       for I in Wire_1_Vecs'Range loop
