@@ -9,30 +9,52 @@ is
    
    type Pass_Digit is mod 10;
 
-   type Pass_Digits is record
-      Pos_1 : Pass_Digit;
-      Pos_2 : Pass_Digit;
-      Pos_3 : Pass_Digit;
-      Pos_4 : Pass_Digit;
-      Pos_5 : Pass_Digit;
-      Pos_6 : Pass_Digit;
-   end record;
+   type Num_Digits is range 1 .. 6;
 
+   type Pass_Digits is array (Num_Digits) of Pass_Digit;
 
    function Test_A (Code : Pass_Digits) return Boolean
-   is ((Code.Pos_1 <= Code.Pos_2 and then
-      Code.Pos_2 <= Code.Pos_3 and then
-      Code.Pos_3 <= Code.Pos_4 and then
-      Code.Pos_4 <= Code.Pos_5 and then
-      Code.Pos_5 <= Code.Pos_6)
+   is ((Code (1) <= Code (2) and then
+      Code (2) <= Code (3) and then
+      Code (3) <= Code (4) and then
+      Code (4) <= Code (5) and then
+      Code (5) <= Code (6))
       
       and then
 
-      (Code.Pos_1 = Code.Pos_2 or else
-      Code.Pos_2 = Code.Pos_3 or else
-      Code.Pos_3 = Code.Pos_4 or else
-      Code.Pos_4 = Code.Pos_5 or else
-      Code.Pos_5 = Code.Pos_6));
+      (Code (1) = Code (2) or else
+      Code (2) = Code (3) or else
+      Code (3) = Code (4) or else
+      Code (4) = Code (5) or else
+      Code (5) = Code (6)));
+
+   function Test_B (Code : Pass_Digits) return Boolean 
+   is
+      Found_Count : Pass_Digit := 0;
+   begin
+
+      -- This is pretty messy  :( 
+      for I in Num_Digits range Num_Digits'First .. Num_Digits'Last -1
+      loop
+         if Code(I) = Code(Num_Digits'Succ(I)) then
+            Found_Count := Found_Count + 1;
+         elsif Found_Count = 1 then
+            -- Found what we want - so exit.
+            return True;
+         else
+            Found_Count := 0;
+         end if;
+      end loop;
+      
+      -- Handles the pair being right at the end.
+      if Found_Count = 1 then
+         return True;
+      else
+         return False;
+      end if;
+
+   end Test_B;
+       
 
 
    Input_Split : GNAT.String_Split.Slice_Set;
@@ -43,7 +65,8 @@ is
    Code : String (1 .. 7);
    Current_Code : Pass_Digits;
 
-   Num_Valid : Natural := 0;
+   Num_Valid_1 : Natural := 0;
+   Num_Valid_2 : Natural := 0;
 
 begin
    loop
@@ -62,25 +85,30 @@ begin
                (Input_Split, GNAT.String_Split.Slice_Number(2))); 
 
          for I in Passcode range Low .. High loop
-            --Ada.Text_IO.Put_Line(I'Image(i'Image'First + 1 .. i'Image'First + 1));
             Code := I'Image;
-            Current_Code.Pos_1 := 
+            Current_Code (1) := 
                Pass_Digit'Value(Code(Code'First + 1 .. Code'First + 1));
-            Current_Code.Pos_2 := 
+            Current_Code (2) := 
                Pass_Digit'Value(Code(Code'First + 2 .. Code'First + 2));
-            Current_Code.Pos_3 := 
+            Current_Code (3) := 
                Pass_Digit'Value(Code(Code'First + 3 .. Code'First + 3));
-            Current_Code.Pos_4 := 
+            Current_Code (4) := 
                Pass_Digit'Value(Code(Code'First + 4 .. Code'First + 4));
-            Current_Code.Pos_5 := 
+            Current_Code (5) := 
                Pass_Digit'Value(Code(Code'First + 5 .. Code'First + 5));
-            Current_Code.Pos_6 := 
+            Current_Code (6) := 
                Pass_Digit'Value(Code(Code'First + 6  ..Code'First + 6));
+
             if Test_A(Current_Code) then
-               Num_Valid := Num_Valid + 1;
+               Num_Valid_1 := Num_Valid_1 + 1;
+               if Test_B (Current_Code) then
+                  Num_Valid_2 := Num_Valid_2 + 1;
+               end if;
             end if;
+
          end loop;
-         Ada.Text_IO.Put_Line("Num Valid:" & Num_Valid'Image);
+         Ada.Text_IO.Put_Line("Num Valid 1:" & Num_Valid_1'Image);
+         Ada.Text_IO.Put_Line("Num Valid 2:" & Num_Valid_2'Image);
 
          exit when Ada.Text_IO.End_Of_File;
       end;
