@@ -1,7 +1,7 @@
 with Ada.Containers.Formal_Vectors;
 
 package Coord
-   with SPARK_Mode => Off
+   with SPARK_Mode => On
 is
 
    -- Using Natural with Bounded_Vectors produces a compile time warning,

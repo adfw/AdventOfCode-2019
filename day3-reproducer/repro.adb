@@ -13,6 +13,7 @@ is
 
 begin
    
+   -- Fails SPARK analysis, but we knew that was going to happen...
    for J in Positive range 1 .. 40005 loop
       Coord.Points.Append(Vec_2, Pos);
       Ada.Text_IO.Put_Line ("Vector Append" & Coord.Points.Length(Vec_2)'Image);
